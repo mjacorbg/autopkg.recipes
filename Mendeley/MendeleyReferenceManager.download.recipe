@@ -2,87 +2,95 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Comment</key>
-  <string>Autodiscover Mendeley Reference Manager DMG and version</string>
+	<key>Comment</key>
+	<string>Created with Recipe Robot v2.5.0 (https://github.com/homebysix/recipe-robot) — modified to use URLTextSearcher</string>
+	<key>Description</key>
+	<string>Downloads the latest version of Mendeley Reference Manager.</string>
+	<key>Identifier</key>
+	<string>org.rgba.recipes.download.MendeleyReferenceManager</string>
+	<key>Input</key>
+	<dict>
+		<key>NAME</key>
+		<string>MendeleyReferenceManager</string>
+	</dict>
+	<key>MinimumVersion</key>
+	<string>2.3</string>
+	<key>Process</key>
+	<array>
 
-  <key>Description</key>
-  <string>Downloads the latest version of Mendeley Reference Manager by scraping the Mendeley macOS download page.</string>
+		<!-- Discover the latest .dmg URL on the Mendeley macOS download page -->
+		<dict>
+			<key>Processor</key>
+			<string>URLTextSearcher</string>
+			<key>Arguments</key>
+			<dict>
+				<!-- Page that contains the static.mendeley link -->
+				<key>url</key>
+				<string>https://www.mendeley.com/download-reference-manager/macOS</string>
 
-  <key>Identifier</key>
-  <string>org.rgba.recipes.download.MendeleyReferenceManager</string>
+				<!--
+					Required: regex with:
+					- group 1 = full dmg URL (used as %url%)
+					- group 2 = version string (optional, written to %version%)
+				-->
+				<key>re_pattern</key>
+				<string>(https://static\.mendeley\.com/bin/desktop/mendeley-reference-manager-([0-9]+\.[0-9]+(?:\.[0-9]+)*)-universal\.dmg)</string>
 
-  <key>Input</key>
-  <dict>
-    <key>NAME</key>
-    <string>Mendeley Reference Manager</string>
-  </dict>
+				<!-- Write the full URL (group 1) to %url% -->
+				<key>result_output_variable</key>
+				<string>url</string>
 
-  <key>MinimumVersion</key>
-  <string>2.3</string>
+				<!-- Write the version (group 2) to %version% (optional) -->
+				<key>version_output_variable</key>
+				<string>version</string>
+			</dict>
+		</dict>
 
-  <key>Process</key>
-  <array>
+		<!-- Download the discovered URL -->
+		<dict>
+			<key>Arguments</key>
+			<dict>
+				<!-- use discovered URL -->
+				<key>url</key>
+				<string>%url%</string>
 
-    <!-- 1) Use URLDownloader with download_regex to find the absolute static DMG URL on the page -->
-    <dict>
-      <key>Arguments</key>
-      <dict>
-        <!-- page that contains the anchor to the static DMG -->
-        <key>url</key>
-        <string>https://www.mendeley.com/download-reference-manager/macOS</string>
+				<!-- keep filename unchanged for minimal edits -->
+				<key>filename</key>
+				<string>%NAME%.dmg</string>
+			</dict>
+			<key>Processor</key>
+			<string>URLDownloader</string>
+		</dict>
 
-        <!--
-          Regex applied to the downloaded HTML to find the full DMG URL.
-          Matches e.g.:
-            https://static.mendeley.com/bin/desktop/mendeley-reference-manager-2.143.0-universal.dmg
-        -->
-        <key>download_regex</key>
-        <string>https://static\.mendeley\.com/bin/desktop/mendeley-reference-manager-[0-9]+\.[0-9]+\.[0-9]+-universal\.dmg</string>
+		<dict>
+			<key>Processor</key>
+			<string>EndOfCheckPhase</string>
+		</dict>
 
-        <!-- Output filename in the AutoPkg cache. Use %NAME%.dmg so it works without a pre-known %version%. -->
-        <key>filename</key>
-        <string>%NAME%.dmg</string>
+		<dict>
+			<key>Arguments</key>
+			<dict>
+				<key>input_path</key>
+				<string>%pathname%/Mendeley Reference Manager.app</string>
+				<key>requirement</key>
+				<string>identifier "com.elsevier.mendeley" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = "45K89Y5X9B"</string>
+			</dict>
+			<key>Processor</key>
+			<string>CodeSignatureVerifier</string>
+		</dict>
 
-        <!-- Optional: If multiple matches exist, uncomment and set which one to use (1-based). -->
-        <!-- <key>download_match_number</key>
-        <integer>1</integer> -->
-      </dict>
-      <key>Processor</key>
-      <string>URLDownloader</string>
-    </dict>
+		<dict>
+			<key>Arguments</key>
+			<dict>
+				<key>input_plist_path</key>
+				<string>%pathname%/Mendeley Reference Manager.app/Contents/Info.plist</string>
+				<key>plist_version_key</key>
+				<string>CFBundleShortVersionString</string>
+			</dict>
+			<key>Processor</key>
+			<string>Versioner</string>
+		</dict>
 
-    <!-- End of check phase -->
-    <dict>
-      <key>Processor</key>
-      <string>EndOfCheckPhase</string>
-    </dict>
-
-    <!-- Verify signature -->
-    <dict>
-      <key>Arguments</key>
-      <dict>
-        <key>input_path</key>
-        <string>%pathname%/Mendeley Reference Manager.app</string>
-        <key>requirement</key>
-        <string>identifier "com.elsevier.mendeley" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = "45K89Y5X9B"</string>
-      </dict>
-      <key>Processor</key>
-      <string>CodeSignatureVerifier</string>
-    </dict>
-
-    <!-- Extract version from app Info.plist (this is a good cross-check) -->
-    <dict>
-      <key>Arguments</key>
-      <dict>
-        <key>input_plist_path</key>
-        <string>%pathname%/Mendeley Reference Manager.app/Contents/Info.plist</string>
-        <key>plist_version_key</key>
-        <string>CFBundleShortVersionString</string>
-      </dict>
-      <key>Processor</key>
-      <string>Versioner</string>
-    </dict>
-
-  </array>
+	</array>
 </dict>
 </plist>
