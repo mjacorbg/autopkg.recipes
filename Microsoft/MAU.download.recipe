@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>Comment</key>
-    <string>Created with Recipe Robot (converted to dynamic discovery)</string>
+    <string>Created with Recipe Robot (converted to dynamic discovery; fixes capture-group behavior)</string>
     <key>Description</key>
     <string>Downloads the latest version of Microsoft AutoUpdate (discovered from Microsoft release-history page).</string>
     <key>Identifier</key>
@@ -17,14 +17,14 @@
     <string>2.3</string>
     <key>Process</key>
     <array>
-        <!-- 1) discover the current pkg URL and capture version -->
+        <!-- 1) discover the current pkg URL and capture both full URL (group 1) and version (group 2) -->
         <dict>
             <key>Arguments</key>
             <dict>
                 <key>url</key>
                 <string>https://learn.microsoft.com/en-us/officeupdates/release-history-microsoft-autoupdate</string>
                 <key>re_pattern</key>
-                <string>https://officecdnmac\.microsoft\.com/pr/[A-F0-9-]+/MacAutoupdate/Microsoft_AutoUpdate_(\d+(?:\.\d+)+)_Updater\.pkg</string>
+                <string>(https://officecdnmac\.microsoft\.com/pr/[A-F0-9-]+/MacAutoupdate/Microsoft_AutoUpdate_(\d+(?:\.\d+)+)_Updater\.pkg)</string>
                 <key>result_output_var_name</key>
                 <string>download_url</string>
                 <key>version_output_var_name</key>
@@ -34,7 +34,7 @@
             <string>URLTextSearcher</string>
         </dict>
 
-        <!-- 2) download the discovered pkg -->
+        <!-- 2) download the discovered pkg using the full URL -->
         <dict>
             <key>Arguments</key>
             <dict>
@@ -69,8 +69,6 @@
             <key>Processor</key>
             <string>CodeSignatureVerifier</string>
         </dict>
-
-        <!-- optional: you can use the discovered download_version elsewhere in your pipeline -->
     </array>
 </dict>
 </plist>
