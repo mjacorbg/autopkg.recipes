@@ -2,142 +2,27 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Comment</key>
-  <string>Local override — uses CURLDownloader to fetch Mendeley DMG (more robust).</string>
-  <key>Description</key>
-  <string>Downloads Mendeley Reference Manager DMG using CURLDownloader; builds pkg.</string>
-  <key>Identifier</key>
-  <string>org.rgba.recipes.pkg.MendeleyReferenceManager</string>
-
-  <key>Input</key>
-  <dict>
-    <key>NAME</key>
-    <string>Mendeley Reference Manager</string>
-  </dict>
-
-  <key>MinimumVersion</key>
-  <string>2.3</string>
-
-  <key>Process</key>
-  <array>
-
-    <!-- 1) Find URL -->
-    <dict>
-      <key>Processor</key>
-      <string>URLTextSearcher</string>
-      <key>Arguments</key>
-      <dict>
-        <key>url</key>
-        <string>https://www.mendeley.com/download-reference-manager/macOS</string>
-
-        <key>request_headers</key>
-        <dict>
-          <key>User-Agent</key>
-          <string>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15</string>
-          <key>Accept</key>
-          <string>text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</string>
-        </dict>
-
-        <key>re_pattern</key>
-        <string>(https://static\.mendeley\.com/bin/desktop/mendeley-reference-manager-([0-9]+\.[0-9]+(?:\.[0-9]+)*)-universal\.dmg)</string>
-
-        <key>result_output_variable</key>
-        <string>url</string>
-
-        <key>version_output_variable</key>
-        <string>version</string>
-      </dict>
-    </dict>
-
-    <!-- 2) Download using CURLDownloader (more control) -->
-    <dict>
-      <key>Processor</key>
-      <string>CURLDownloader</string>
-      <key>Arguments</key>
-      <dict>
-        <key>url</key>
-        <string>%url%</string>
-
-        <!-- keep a consistent filename; we'll rename later if desired -->
-        <key>filename</key>
-        <string>%NAME%.dmg</string>
-
-        <!-- pass browser headers to curl -->
-        <key>request_headers</key>
-        <dict>
-          <key>User-Agent</key>
-          <string>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15</string>
-          <key>Accept</key>
-          <string>text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8</string>
-        </dict>
-
-        <!-- recommended curl options -->
-        <key>curl_options</key>
-        <array>
-          <string>--location</string>
-          <string>--fail</string>
-          <string>--retry</string>
-          <string>3</string>
-          <string>--retry-delay</string>
-          <string>3</string>
-        </array>
-
-      </dict>
-    </dict>
-
-    <dict>
-      <key>Processor</key>
-      <string>EndOfCheckPhase</string>
-    </dict>
-
-    <dict>
-      <key>Processor</key>
-      <string>CodeSignatureVerifier</string>
-      <key>Arguments</key>
-      <dict>
-        <key>input_path</key>
-        <string>%pathname%/Mendeley Reference Manager.app</string>
-        <key>requirement</key>
-        <string>identifier "com.elsevier.mendeley" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = "45K89Y5X9B"</string>
-      </dict>
-    </dict>
-
-    <dict>
-      <key>Processor</key>
-      <string>Versioner</string>
-      <key>Arguments</key>
-      <dict>
-        <key>input_plist_path</key>
-        <string>%pathname%/Mendeley Reference Manager.app/Contents/Info.plist</string>
-        <key>plist_version_key</key>
-        <string>CFBundleShortVersionString</string>
-      </dict>
-    </dict>
-
-    <!-- optional: rename DMG to include version AFTER version is known -->
-    <dict>
-      <key>Processor</key>
-      <string>ShellScript</string>
-      <key>Arguments</key>
-      <dict>
-        <key>shell</key>
-        <string>/bin/bash</string>
-        <key>script</key>
-        <string>
-          CACHE="$HOME/Library/AutoPkg/Cache/org.rgba.recipes.pkg.MendeleyReferenceManager"
-          DMG="$CACHE/downloads/Mendeley Reference Manager.dmg"
-          if [ -n "$version" ] && [ -f "$DMG" ]; then
-            mv "$DMG" "$CACHE/downloads/Mendeley Reference Manager-$version.dmg"
-          fi
-        </string>
-      </dict>
-    </dict>
-
-    <dict>
-      <key>Processor</key>
-      <string>AppPkgCreator</string>
-    </dict>
-
-  </array>
+	<key>Comment</key>
+	<string>Created with Recipe Robot v2.5.0 (https://github.com/homebysix/recipe-robot)</string>
+	<key>Description</key>
+	<string>Downloads the latest version of Mendeley Reference Manager and creates a package.</string>
+	<key>Identifier</key>
+	<string>org.rgba.recipes.pkg.MendeleyReferenceManager</string>
+	<key>Input</key>
+	<dict>
+		<key>NAME</key>
+		<string>Mendeley Reference Manager</string>
+	</dict>
+	<key>MinimumVersion</key>
+	<string>2.3</string>
+	<key>ParentRecipe</key>
+	<string>org.rgba.recipes.download.MendeleyReferenceManager</string>
+	<key>Process</key>
+	<array>
+		<dict>
+			<key>Processor</key>
+			<string>AppPkgCreator</string>
+		</dict>
+	</array>
 </dict>
 </plist>
