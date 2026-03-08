@@ -2,51 +2,75 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>Comment</key>
-	<string>Created with Recipe Robot v2.5.0 (https://github.com/homebysix/recipe-robot)</string>
-	<key>Description</key>
-	<string>Downloads the latest version of Microsoft AutoUpdate.</string>
-	<key>Identifier</key>
-	<string>org.rgba.recipes.download.MicrosoftAutoUpdate</string>
-	<key>Input</key>
-	<dict>
-		<key>NAME</key>
-		<string>Microsoft AutoUpdate</string>
-	</dict>
-	<key>MinimumVersion</key>
-	<string>2.3</string>
-	<key>Process</key>
-	<array>
-		<dict>
-			<key>Arguments</key>
-			<dict>
-				<key>filename</key>
-				<string>%NAME%.pkg</string>
-				<key>url</key>
-				<string>https://officecdnmac.microsoft.com/pr/C1297A47-86C4-4C1F-97FA-950631F94777/MacAutoupdate/Microsoft_AutoUpdate_4.82.26020434_Updater.pkg</string>
-			</dict>
-			<key>Processor</key>
-			<string>URLDownloader</string>
-		</dict>
-		<dict>
-			<key>Processor</key>
-			<string>EndOfCheckPhase</string>
-		</dict>
-		<dict>
-			<key>Arguments</key>
-			<dict>
-				<key>expected_authority_names</key>
-				<array>
-					<string>Developer ID Installer: Microsoft Corporation (UBF8T346G9)</string>
-					<string>Developer ID Certification Authority</string>
-					<string>Apple Root CA</string>
-				</array>
-				<key>input_path</key>
-				<string>%pathname%</string>
-			</dict>
-			<key>Processor</key>
-			<string>CodeSignatureVerifier</string>
-		</dict>
-	</array>
+    <key>Comment</key>
+    <string>Created with Recipe Robot (converted to dynamic discovery)</string>
+    <key>Description</key>
+    <string>Downloads the latest version of Microsoft AutoUpdate (discovered from Microsoft release-history page).</string>
+    <key>Identifier</key>
+    <string>org.rgba.recipes.download.MicrosoftAutoUpdate</string>
+    <key>Input</key>
+    <dict>
+        <key>NAME</key>
+        <string>Microsoft AutoUpdate</string>
+    </dict>
+    <key>MinimumVersion</key>
+    <string>2.3</string>
+    <key>Process</key>
+    <array>
+        <!-- 1) discover the current pkg URL and capture version -->
+        <dict>
+            <key>Arguments</key>
+            <dict>
+                <key>url</key>
+                <string>https://learn.microsoft.com/en-us/officeupdates/release-history-microsoft-autoupdate</string>
+                <key>re_pattern</key>
+                <string>https://officecdnmac\.microsoft\.com/pr/[A-F0-9-]+/MacAutoupdate/Microsoft_AutoUpdate_(\d+(?:\.\d+)+)_Updater\.pkg</string>
+                <key>result_output_var_name</key>
+                <string>download_url</string>
+                <key>version_output_var_name</key>
+                <string>download_version</string>
+            </dict>
+            <key>Processor</key>
+            <string>URLTextSearcher</string>
+        </dict>
+
+        <!-- 2) download the discovered pkg -->
+        <dict>
+            <key>Arguments</key>
+            <dict>
+                <key>filename</key>
+                <string>%NAME%.pkg</string>
+                <key>url</key>
+                <string>%download_url%</string>
+            </dict>
+            <key>Processor</key>
+            <string>URLDownloader</string>
+        </dict>
+
+        <!-- 3) separate check-phase from post-download processors -->
+        <dict>
+            <key>Processor</key>
+            <string>EndOfCheckPhase</string>
+        </dict>
+
+        <!-- 4) verify package signature -->
+        <dict>
+            <key>Arguments</key>
+            <dict>
+                <key>expected_authority_names</key>
+                <array>
+                    <string>Developer ID Installer: Microsoft Corporation (UBF8T346G9)</string>
+                    <string>Developer ID Certification Authority</string>
+                    <string>Apple Root CA</string>
+                </array>
+                <key>input_path</key>
+                <string>%pathname%</string>
+            </dict>
+            <key>Processor</key>
+            <string>CodeSignatureVerifier</string>
+        </dict>
+
+        <!-- optional: you can use the discovered download_version elsewhere in your pipeline -->
+    </array>
 </dict>
 </plist>
