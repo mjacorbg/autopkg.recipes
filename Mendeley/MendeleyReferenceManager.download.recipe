@@ -23,7 +23,7 @@
   <key>Process</key>
   <array>
 
-    <!-- 1) Scrape the page and capture DMG URL + version -->
+    <!-- 1) Use URLDownloader with download_regex to find the absolute static DMG URL on the page -->
     <dict>
       <key>Arguments</key>
       <dict>
@@ -32,35 +32,20 @@
         <string>https://www.mendeley.com/download-reference-manager/macOS</string>
 
         <!--
-          Regex that matches the absolute static DMG URL and captures the version.
-          The first capture group is the version (e.g. 2.143.0).
+          Regex applied to the downloaded HTML to find the full DMG URL.
+          Matches e.g.:
+            https://static.mendeley.com/bin/desktop/mendeley-reference-manager-2.143.0-universal.dmg
         -->
-        <key>find_text</key>
-        <string>https://static\.mendeley\.com/bin/desktop/mendeley-reference-manager-([0-9]+\.[0-9]+\.[0-9]+)-universal\.dmg</string>
+        <key>download_regex</key>
+        <string>https://static\.mendeley\.com/bin/desktop/mendeley-reference-manager-[0-9]+\.[0-9]+\.[0-9]+-universal\.dmg</string>
 
-        <!--
-          We want the full matched URL available for the next processor as "download_url".
-          Many URLTextSearcher implementations set the found text into a variable the next processor can use.
-          If your local AutoPkg version uses slightly different argument names, keep the same idea:
-            - find the URL and the version
-            - expose them as download_url and version
-        -->
-      </dict>
-      <key>Processor</key>
-      <string>URLTextSearcher</string>
-    </dict>
-
-    <!-- 2) Use URLDownloader to actually fetch the file (use discovered %download_url% and %version%) -->
-    <dict>
-      <key>Arguments</key>
-      <dict>
-        <!-- URLDownloader will use %download_url% (populated by URLTextSearcher) -->
-        <key>url</key>
-        <string>%download_url%</string>
-
-        <!-- Putting the version into the filename makes cache/output clearer -->
+        <!-- Output filename in the AutoPkg cache. Use %NAME%.dmg so it works without a pre-known %version%. -->
         <key>filename</key>
-        <string>%NAME%-%version%.dmg</string>
+        <string>%NAME%.dmg</string>
+
+        <!-- Optional: If multiple matches exist, uncomment and set which one to use (1-based). -->
+        <!-- <key>download_match_number</key>
+        <integer>1</integer> -->
       </dict>
       <key>Processor</key>
       <string>URLDownloader</string>
