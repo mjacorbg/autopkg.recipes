@@ -64,7 +64,7 @@
 
 				<!-- keep the filename you prefer; changed to include version if you want -->
 				<key>filename</key>
-				<string>%NAME%-%version%.dmg</string>
+				<string>%NAME%.dmg</string>
 
 				<key>request_headers</key>
 				<dict>
